@@ -1,0 +1,15 @@
+{
+	"python.languageServer": "None",
+	"files.exclude": {
+		".venv": true
+	},
+	"[python]": {
+		"editor.codeActionsOnSave": {
+			"source.organizeImports.ruff": "always",
+			"source.fixAll.ruff": "always"
+		},
+		"editor.defaultFormatter": "charliermarsh.ruff"
+	},
+	"editor.formatOnSave": true,
+
+}
