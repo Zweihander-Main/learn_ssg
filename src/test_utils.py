@@ -1,7 +1,7 @@
 import unittest
 
 from textnode import TextNode, TextType
-from utils import split_nodes_delimiter
+from utils import extract_markdown_images, extract_markdown_links, split_nodes_delimiter
 
 
 class TestUtils(unittest.TestCase):
@@ -74,3 +74,44 @@ class TestUtils(unittest.TestCase):
         self.assertEqual(new_nodes[2], TextNode(" and ", TextType.TEXT))
         self.assertEqual(new_nodes[3], TextNode("italic", TextType.ITALIC))
         self.assertEqual(new_nodes[4], TextNode(" text", TextType.TEXT))
+
+    def test_extract_markdown_images(self):
+        matches = extract_markdown_images(
+            "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png)"
+        )
+        self.assertListEqual([("image", "https://i.imgur.com/zjjcJKZ.png")], matches)
+
+    def test_extract_markdown_images_multiple(self):
+        matches = extract_markdown_images(
+            "Images: ![img1](http://example.com/1.png) and ![img2](http://example.com/2.jpg)"
+        )
+        self.assertListEqual(
+            [
+                ("img1", "http://example.com/1.png"),
+                ("img2", "http://example.com/2.jpg"),
+            ],
+            matches,
+        )
+
+    def test_extract_markdown_images_none(self):
+        matches = extract_markdown_images("This text has no images.")
+        self.assertListEqual([], matches)
+
+    def text_extract_markdown_links(self):
+        matches = extract_markdown_links(
+            "This is a [link](https://example.com) in text."
+        )
+        self.assertListEqual([("link", "https://example.com")], matches)
+
+    def test_extract_markdown_links_multiple(self):
+        matches = extract_markdown_links(
+            "Links: [Google](https://google.com) and [OpenAI](https://openai.com)"
+        )
+        self.assertListEqual(
+            [("Google", "https://google.com"), ("OpenAI", "https://openai.com")],
+            matches,
+        )
+
+    def test_extract_markdown_links_none(self):
+        matches = extract_markdown_links("This text has no links.")
+        self.assertListEqual([], matches)
