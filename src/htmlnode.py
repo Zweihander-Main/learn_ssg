@@ -39,7 +39,7 @@ class HTMLNode:
 class LeafNode(HTMLNode):
     def __init__(
         self,
-        tag: str,
+        tag: str | None,
         value: str,
         props: dict[str, str] | None = None,
     ) -> None:
@@ -52,9 +52,16 @@ class LeafNode(HTMLNode):
         if self.tag is None:
             return self.value
         props_str = self.props_to_html()
+        return_html = f"<{self.tag}"
         if props_str:
-            return f"<{self.tag} {props_str}>{self.value}</{self.tag}>"
-        return f"<{self.tag}>{self.value}</{self.tag}>"
+            return_html += f" {props_str}"
+        if self.value and self.tag not in ["img", "br", "hr", "input", "meta", "link"]:
+            return_html += f">{self.value}"
+        if self.tag not in ["img", "br", "hr", "input", "meta", "link"]:
+            return_html += f"</{self.tag}>"
+        else:
+            return_html += "/>"
+        return return_html
 
     @override
     def __repr__(self) -> str:

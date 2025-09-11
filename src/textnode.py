@@ -1,9 +1,12 @@
 from enum import Enum
 from typing import override
 
+from htmlnode import LeafNode
+
 
 class TextType(Enum):
     PLAIN = 1
+    TEXT = 1
     BOLD = 2
     ITALIC = 3
     UNDERLINE = 4
@@ -28,6 +31,53 @@ class TextNode:
         self.text: str = text
         self.text_type: TextType = text_type
         self.url: str | None = url
+
+    def to_html_node(self) -> LeafNode:
+        match self.text_type:
+            case TextType.PLAIN | TextType.TEXT:
+                return LeafNode(tag=None, value=self.text)
+            case TextType.BOLD:
+                return LeafNode(tag="strong", value=self.text)
+            case TextType.ITALIC:
+                return LeafNode(tag="em", value=self.text)
+            case TextType.UNDERLINE:
+                return LeafNode(tag="u", value=self.text)
+            case TextType.STRIKETHROUGH:
+                return LeafNode(tag="s", value=self.text)
+            case TextType.LINK:
+                if self.url is None:
+                    raise ValueError("Link text node must have a URL")
+                return LeafNode(tag="a", value=self.text, props={"href": self.url})
+            case TextType.CODE:
+                return LeafNode(tag="code", value=self.text)
+            case TextType.CODE_BLOCK:
+                return LeafNode(tag="pre", value=self.text)
+            case TextType.QUOTE:
+                return LeafNode(tag="blockquote", value=self.text)
+            case TextType.HIGHLIGHT:
+                return LeafNode(tag="mark", value=self.text)
+            case TextType.IMAGE:
+                if self.url is None:
+                    raise ValueError("Image text node must have a URL")
+                return LeafNode(
+                    tag="img", value="", props={"src": self.url, "alt": self.text}
+                )
+            case TextType.LIST_ITEM:
+                return LeafNode(tag="li", value=self.text)
+            case TextType.HEADING1:
+                return LeafNode(tag="h1", value=self.text)
+            case TextType.HEADING2:
+                return LeafNode(tag="h2", value=self.text)
+            case TextType.HEADING3:
+                return LeafNode(tag="h3", value=self.text)
+            case TextType.HEADING4:
+                return LeafNode(tag="h4", value=self.text)
+            case TextType.HEADING5:
+                return LeafNode(tag="h5", value=self.text)
+            case TextType.HEADING6:
+                return LeafNode(tag="h6", value=self.text)
+            case _:  # pyright: ignore[reportUnnecessaryComparison]
+                raise ValueError(f"Unsupported text type: {self.text_type}")  # pyright: ignore[reportUnreachable]
 
     @override
     def __eq__(self, other: object) -> bool:
