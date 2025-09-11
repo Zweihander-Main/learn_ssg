@@ -53,14 +53,15 @@ class LeafNode(HTMLNode):
             return self.value
         props_str = self.props_to_html()
         return_html = f"<{self.tag}"
+        unclosed_tags = {"img", "br", "hr", "input", "meta", "link"}
         if props_str:
             return_html += f" {props_str}"
-        if self.value and self.tag not in ["img", "br", "hr", "input", "meta", "link"]:
-            return_html += f">{self.value}"
-        if self.tag not in ["img", "br", "hr", "input", "meta", "link"]:
-            return_html += f"</{self.tag}>"
-        else:
+        if self.tag in unclosed_tags:
             return_html += "/>"
+        else:
+            if self.value:
+                return_html += f">{self.value}"
+            return_html += f"</{self.tag}>"
         return return_html
 
     @override
