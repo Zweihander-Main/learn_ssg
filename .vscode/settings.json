@@ -11,5 +11,8 @@
 		"editor.defaultFormatter": "charliermarsh.ruff"
 	},
 	"editor.formatOnSave": true,
+	"cSpell.words": [
+		"textnode"
+	],
 
 }
