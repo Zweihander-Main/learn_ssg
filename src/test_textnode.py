@@ -25,7 +25,7 @@ class TestTextNode(unittest.TestCase):
         node = TextNode("Click here", TextType.LINK, url="https://example.com")
         self.assertEqual(node.url, "https://example.com")
 
-        node_no_url = TextNode("No link", TextType.PLAIN)
+        node_no_url = TextNode("No link", TextType.TEXT)
         self.assertIsNone(node_no_url.url)
 
     def test_to_html_node_text(self):
