@@ -132,3 +132,26 @@ def split_nodes_link(old_nodes: list[TextNode]) -> list[TextNode]:
         if last_end < len(node.text):
             new_nodes.append(TextNode(node.text[last_end:], TextType.TEXT))
     return new_nodes
+
+
+def text_to_textnodes(text: str) -> list[TextNode]:
+    """
+    Converts a plain text string into a list of TextNode objects split using markdown syntax.
+
+    Args:
+        text (str): The input plain text string.
+
+    Returns:
+        list[TextNode]: A list of TextNode objects representing the parsed text.
+    """
+    nodes = [TextNode(text, TextType.TEXT)]
+    nodes = split_nodes_image(nodes)
+    nodes = split_nodes_link(nodes)
+    nodes = split_nodes_delimiter(nodes, "```", TextType.CODE_BLOCK)
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "__", TextType.UNDERLINE)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "*", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "~~", TextType.STRIKETHROUGH)
+    nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
+    return nodes

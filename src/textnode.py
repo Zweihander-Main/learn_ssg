@@ -11,12 +11,11 @@ class TextType(Enum):
     UNDERLINE = 4
     STRIKETHROUGH = 5
     LINK = 6
-    CODE = 7
-    CODE_BLOCK = 8
-    QUOTE = 9
-    HIGHLIGHT = 10
-    IMAGE = 11
-    LIST_ITEM = 12
+    IMAGE = 7
+    CODE = 8
+    CODE_BLOCK = 9
+    LIST_ITEM = 10
+    BLOCKQUOTE = 11
     HEADING1 = 13
     HEADING2 = 14
     HEADING3 = 15
@@ -51,10 +50,8 @@ class TextNode:
                 return LeafNode(tag="code", value=self.text)
             case TextType.CODE_BLOCK:
                 return LeafNode(tag="pre", value=self.text)
-            case TextType.QUOTE:
+            case TextType.BLOCKQUOTE:
                 return LeafNode(tag="blockquote", value=self.text)
-            case TextType.HIGHLIGHT:
-                return LeafNode(tag="mark", value=self.text)
             case TextType.IMAGE:
                 if self.url is None:
                     raise ValueError("Image text node must have a URL")
