@@ -2,8 +2,11 @@ import unittest
 
 from textnode import TextNode, TextType
 from utils import (
+    BlockType,
+    block_to_block_type,
     extract_markdown_images,
     extract_markdown_links,
+    markdown_to_blocks,
     split_nodes_delimiter,
     split_nodes_image,
     split_nodes_link,
@@ -496,3 +499,83 @@ class TestUtils(unittest.TestCase):
                 TextNode("link", TextType.LINK, "https://boot.dev"),
             ],
         )
+
+    def test_markdown_to_blocks_basic(self):
+        md = """
+This is **bolded** paragraph
+
+This is another paragraph with _italic_ text and `code` here
+This is the same paragraph on a new line
+
+- This is a list
+- with items
+"""
+
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks,
+            [
+                "This is **bolded** paragraph",
+                "This is another paragraph with _italic_ text and `code` here\nThis is the same paragraph on a new line",
+                "- This is a list\n- with items",
+            ],
+        )
+
+    def test_markdown_to_blocks_empty(self):
+        md = ""
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, [])
+
+    def test_markdown_to_blocks_only_newlines(self):
+        md = "\n\n\n"
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(blocks, [])
+
+    def test_markdown_to_blocks_no_double_newlines(self):
+        md = "This is a single paragraph with no double newlines."
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks, ["This is a single paragraph with no double newlines."]
+        )
+
+    def test_markdown_to_blocks_leading_trailing_newlines(self):
+        md = "\n\nThis is a paragraph with leading and trailing newlines.\n\n"
+        blocks = markdown_to_blocks(md)
+        self.assertEqual(
+            blocks, ["This is a paragraph with leading and trailing newlines."]
+        )
+
+    def test_block_to_block_type_heading(self):
+        block = "### This is a heading"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.heading)
+
+    def test_block_to_block_type_code(self):
+        block = "```\nThis is a code block\n```"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.code)
+
+    def test_block_to_block_type_quote(self):
+        block = "> This is a quote"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.quote)
+
+    def test_block_to_block_type_unordered_list(self):
+        block = "- This is a list item"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.unordered_list)
+
+    def test_block_to_block_type_ordered_list(self):
+        block = "1. This is a numbered list item"
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.ordered_list)
+
+    def test_block_to_block_type_paragraph(self):
+        block = "This is a regular paragraph."
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.paragraph)
+
+    def test_block_to_block_type_empty(self):
+        block = ""
+        block_type = block_to_block_type(block)
+        self.assertEqual(block_type, BlockType.paragraph)

@@ -1,4 +1,5 @@
 import re
+from enum import Enum
 
 from textnode import TextNode, TextType
 
@@ -89,12 +90,10 @@ def split_nodes_image(old_nodes: list[TextNode]) -> list[TextNode]:
         for alt_text, url in parts:
             search_string = f"![{alt_text}]({url})"
             start = node.text.find(search_string, last_end)
-            print(len(parts), start, alt_text, url, last_end)
             if start > last_end:
                 new_nodes.append(TextNode(node.text[last_end:start], TextType.TEXT))
             new_nodes.append(TextNode(text=alt_text, text_type=TextType.IMAGE, url=url))
             last_end = start + len(search_string)
-            print(new_nodes)
         if last_end < len(node.text):
             new_nodes.append(TextNode(node.text[last_end:], TextType.TEXT))
     return new_nodes
@@ -147,7 +146,6 @@ def text_to_textnodes(text: str) -> list[TextNode]:
     nodes = [TextNode(text, TextType.TEXT)]
     nodes = split_nodes_image(nodes)
     nodes = split_nodes_link(nodes)
-    nodes = split_nodes_delimiter(nodes, "```", TextType.CODE_BLOCK)
     nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
     nodes = split_nodes_delimiter(nodes, "__", TextType.UNDERLINE)
     nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
@@ -155,3 +153,47 @@ def text_to_textnodes(text: str) -> list[TextNode]:
     nodes = split_nodes_delimiter(nodes, "~~", TextType.STRIKETHROUGH)
     nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
     return nodes
+
+
+def markdown_to_blocks(markdown: str) -> list[str]:
+    """
+    Converts a markdown string into a list of text blocks split by double newlines.
+
+    Args:
+        markdown (str): The input markdown string.
+
+    Returns:
+        list[str]: A list of text blocks.
+    """
+    blocks = [block.strip() for block in markdown.split("\n\n") if block.strip()]
+    return blocks
+
+
+BlockType = Enum(
+    "BlockType",
+    ["paragraph", "heading", "code", "quote", "unordered_list", "ordered_list"],
+)
+
+
+def block_to_block_type(block: str) -> BlockType:
+    """
+    Determines the type of a markdown block.
+
+    Args:
+        block (str): The input markdown block.
+
+    Returns:
+        BlockType: The type of the block.
+    """
+    if re.match(r"^#{1,6} ", block):
+        return BlockType.heading
+    elif re.match(r"^```", block):
+        return BlockType.code
+    elif re.match(r"^> ", block):
+        return BlockType.quote
+    elif re.match(r"^(\*|\-|\+) ", block):
+        return BlockType.unordered_list
+    elif re.match(r"^\d+\. ", block):
+        return BlockType.ordered_list
+    else:
+        return BlockType.paragraph
