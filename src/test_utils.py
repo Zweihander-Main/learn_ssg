@@ -7,6 +7,7 @@ from utils import (
     extract_markdown_images,
     extract_markdown_links,
     markdown_to_blocks,
+    markdown_to_html_node,
     split_nodes_delimiter,
     split_nodes_image,
     split_nodes_link,
@@ -579,3 +580,163 @@ This is the same paragraph on a new line
         block = ""
         block_type = block_to_block_type(block)
         self.assertEqual(block_type, BlockType.paragraph)
+
+    def test_markdown_to_html_node_paragraphs(self):
+        md = """
+This is **bolded** paragraph
+text in a p
+tag here
+
+This is another paragraph with _italic_ text and `code` here
+    """
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><p>This is <strong>bolded</strong> paragraph text in a p tag here</p><p>This is another paragraph with <em>italic</em> text and <code>code</code> here</p></div>",
+        )
+
+    def test_markdown_to_html_node_codeblock(self):
+        md = """
+```
+This is text that _should_ remain
+the **same** even with inline stuff
+```
+    """
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
+        )
+
+    def test_markdown_to_html_node_heading(self):
+        md = """
+# This is a heading
+    """
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html, "<div><h1>This is a heading</h1></div>")
+
+    def test_markdown_to_html_node_quote(self):
+        md = """
+> This is a quote
+    """
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html, "<div><blockquote>This is a quote</blockquote></div>")
+
+    def test_markdown_to_html_node_unordered_list(self):
+        md = """
+- Item 1
+- Item 2
+- Item 3
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ul><li>Item 1</li><li>Item 2</li><li>Item 3</li></ul></div>",
+        )
+
+    def test_markdown_to_html_node_ordered_list(self):
+        md = """
+1. First
+2. Second
+3. Third
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ol><li>First</li><li>Second</li><li>Third</li></ol></div>",
+        )
+
+    def test_markdown_to_html_node_empty(self):
+        md = ""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html, "<div></div>")
+
+    def test_markdown_to_html_node_only_newlines(self):
+        md = "\n\n\n"
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html, "<div></div>")
+
+    def test_markdown_to_html_node_plain(self):
+        md = "This is plain text with no markdown."
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(html, "<div><p>This is plain text with no markdown.</p></div>")
+
+    def test_markdown_to_html_node_image_and_link(self):
+        md = """
+Here is an image: ![alt text](http://example.com/image.png) and a
+[link](http://example.com).
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            '<div><p>Here is an image: <img src="http://example.com/image.png" alt="alt text"/> and a <a href="http://example.com">link</a>.</p></div>',
+        )
+
+    def test_markdown_to_html_node_bold_italic_code(self):
+        md = """
+This is **bold** text, this is _italic_ text, and this is `inline code`.
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><p>This is <strong>bold</strong> text, this is <em>italic</em> text, and this is <code>inline code</code>.</p></div>",
+        )
+
+    def test_markdown_to_html_node_multiple_headings(self):
+        self.maxDiff: int | None = None
+        md = """
+# Heading 1
+
+```
+Some `inline code` here
+```
+
+## Heading 2
+
+> A quote with **bold** text
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><h1>Heading 1</h1><pre><code>Some `inline code` here\n</code></pre><h2>Heading 2</h2><blockquote>A quote with <strong>bold</strong> text</blockquote></div>",
+        )
+
+    def test_markdown_to_html_node_mixed(self):
+        self.maxDiff: int | None = None
+        md = """
+# Heading
+
+```
+Some `inline code` here
+```
+
+> A quote with **bold** text
+
+- List item 1 with _italic_
+- List item 2
+
+1. Numbered item 1
+2. Numbered item 2 with ![image](http://example.com/image.png)
+
+Regular paragraph with a [link](http://example.com).
+"""
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            '<div><h1>Heading</h1><pre><code>Some `inline code` here\n</code></pre><blockquote>A quote with <strong>bold</strong> text</blockquote><ul><li>List item 1 with <em>italic</em></li><li>List item 2</li></ul><ol><li>Numbered item 1</li><li>Numbered item 2 with <img src="http://example.com/image.png" alt="image"/></li></ol><p>Regular paragraph with a <a href="http://example.com">link</a>.</p></div>',
+        )

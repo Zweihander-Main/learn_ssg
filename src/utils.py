@@ -1,6 +1,7 @@
 import re
 from enum import Enum
 
+from htmlnode import HTMLNode, LeafNode, ParentNode
 from textnode import TextNode, TextType
 
 
@@ -197,3 +198,151 @@ def block_to_block_type(block: str) -> BlockType:
         return BlockType.ordered_list
     else:
         return BlockType.paragraph
+
+
+def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
+    """
+    Converts a TextNode into an HTMLNode.
+
+    Args:
+        text_node (TextNode): The input TextNode object.
+
+    Returns:
+        HTMLNode: The corresponding HTMLNode object.
+    """
+    match text_node.text_type:
+        case TextType.TEXT:
+            return LeafNode(tag=None, value=text_node.text)
+        case TextType.BOLD:
+            return LeafNode(tag="strong", value=text_node.text)
+        case TextType.ITALIC:
+            return LeafNode(tag="em", value=text_node.text)
+        case TextType.UNDERLINE:
+            return LeafNode(tag="u", value=text_node.text)
+        case TextType.STRIKETHROUGH:
+            return LeafNode(tag="s", value=text_node.text)
+        case TextType.CODE:
+            return LeafNode(tag="code", value=text_node.text)
+        case TextType.LINK:
+            return LeafNode(
+                tag="a",
+                props={"href": text_node.url if text_node.url else "#"},
+                value=text_node.text,
+            )
+        case TextType.IMAGE:
+            return LeafNode(
+                tag="img",
+                props={
+                    "src": text_node.url if text_node.url else "",
+                    "alt": text_node.text,
+                },
+                value="",
+            )
+        case _:
+            return LeafNode(tag=None, value=text_node.text)
+
+
+def text_to_children(text: str) -> list[HTMLNode]:
+    """
+    Converts a plain text string into a list of HTMLNode children.
+
+    Args:
+        text (str): The input plain text string.
+
+    Returns:
+        list[HTMLNode]: A list of HTMLNode objects representing the parsed text.
+    """
+    text_nodes = text_to_textnodes(text)
+    children: list[HTMLNode] = []
+    for tn in text_nodes:
+        children.append(text_node_to_html_node(tn))
+    return children
+
+
+def markdown_to_html_node(markdown: str) -> HTMLNode:
+    """
+    Converts a markdown string into an HTMLNode tree.
+
+    Args:
+        markdown (str): The input markdown string.
+
+    Returns:
+        HTMLNode: The root HTMLNode representing the parsed markdown.
+    """
+    blocks = markdown_to_blocks(markdown)
+    children: list[HTMLNode] = []
+    for block in blocks:
+        block_type = block_to_block_type(block)
+        match block_type:
+            case BlockType.heading:
+                heading_match = re.match(r"^(#{1,6}) (.*)", block)
+                level = 1  # Default to level 1
+                heading_text = ""
+                if heading_match:
+                    level = len(heading_match.group(1))
+                    heading_text = heading_match.group(2).strip().replace("\n", " ")
+                node = ParentNode(
+                    tag=f"h{level}",
+                    children=text_to_children(heading_text),
+                )
+                children.append(node)
+
+            case BlockType.paragraph:
+                node = ParentNode(
+                    tag="p",
+                    children=text_to_children(block.strip().replace("\n", " ")),
+                )
+                children.append(node)
+
+            case BlockType.unordered_list:
+                items_ul: list[tuple[str, str]] = re.findall(
+                    r"^(\*|\-|\+) (.+)$", block, re.MULTILINE
+                )
+                li_children: list[ParentNode] = []
+                for _, item in items_ul:
+                    li_node = ParentNode(
+                        tag="li",
+                        children=text_to_children(item.strip().replace("\n", " ")),
+                    )
+                    li_children.append(li_node)
+                ul_node = ParentNode(tag="ul", children=li_children)
+                children.append(ul_node)
+
+            case BlockType.ordered_list:
+                items_ol: list[str] = re.findall(r"^\d+\. (.+)$", block, re.MULTILINE)
+                li_children = []
+                for item in items_ol:
+                    li_node = ParentNode(
+                        tag="li",
+                        children=text_to_children(item.strip().replace("\n", " ")),
+                    )
+                    li_children.append(li_node)
+                ol_node = ParentNode(tag="ol", children=li_children)
+                children.append(ol_node)
+
+            case BlockType.quote:
+                quote_match = re.match(r"^> (.+)$", block, re.MULTILINE)
+                content = quote_match.group(1).strip() if quote_match else block.strip()
+                node = ParentNode(
+                    tag="blockquote",
+                    children=text_to_children(content.replace("\n> ", " ")),
+                )
+                children.append(node)
+
+            case BlockType.code:
+                code_match = re.match(r"^```(\w+)?\n([\s\S]+?\n)```$", block)
+                if code_match:
+                    language = code_match.group(1) if code_match.group(1) else ""
+                    code_content = code_match.group(2)
+                else:
+                    language = ""
+                    code_content = block
+                code_node = ParentNode(
+                    tag="code",
+                    props={"class": f"language-{language}"} if language else {},
+                    children=[LeafNode(tag=None, value=code_content)],
+                )
+                pre_node = ParentNode(tag="pre", children=[code_node])
+                children.append(pre_node)
+
+    return ParentNode(tag="div", children=children)
