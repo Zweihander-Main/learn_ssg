@@ -38,11 +38,11 @@ class TestTextNode(unittest.TestCase):
     def test_to_html_node_bold(self):
         node = TextNode("This is bold text", TextType.BOLD)
         html_node = node.to_html_node()
-        self.assertEqual(html_node.tag, "strong")
+        self.assertEqual(html_node.tag, "b")
         self.assertEqual(html_node.value, "This is bold text")
         self.assertEqual(
             html_node.to_html(),
-            "<strong>This is bold text</strong>",
+            "<b>This is bold text</b>",
         )
 
     def test_to_html_node_link(self):

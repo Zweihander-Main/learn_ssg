@@ -594,7 +594,7 @@ This is another paragraph with _italic_ text and `code` here
         html = node.to_html()
         self.assertEqual(
             html,
-            "<div><p>This is <strong>bolded</strong> paragraph text in a p tag here</p><p>This is another paragraph with <em>italic</em> text and <code>code</code> here</p></div>",
+            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p><p>This is another paragraph with <i>italic</i> text and <code>code</code> here</p></div>",
         )
 
     def test_markdown_to_html_node_codeblock(self):
@@ -692,7 +692,7 @@ This is **bold** text, this is _italic_ text, and this is `inline code`.
         html = node.to_html()
         self.assertEqual(
             html,
-            "<div><p>This is <strong>bold</strong> text, this is <em>italic</em> text, and this is <code>inline code</code>.</p></div>",
+            "<div><p>This is <b>bold</b> text, this is <i>italic</i> text, and this is <code>inline code</code>.</p></div>",
         )
 
     def test_markdown_to_html_node_multiple_headings(self):
@@ -712,7 +712,7 @@ Some `inline code` here
         html = node.to_html()
         self.assertEqual(
             html,
-            "<div><h1>Heading 1</h1><pre><code>Some `inline code` here\n</code></pre><h2>Heading 2</h2><blockquote>A quote with <strong>bold</strong> text</blockquote></div>",
+            "<div><h1>Heading 1</h1><pre><code>Some `inline code` here\n</code></pre><h2>Heading 2</h2><blockquote>A quote with <b>bold</b> text</blockquote></div>",
         )
 
     def test_markdown_to_html_node_mixed(self):
@@ -738,5 +738,5 @@ Regular paragraph with a [link](http://example.com).
         html = node.to_html()
         self.assertEqual(
             html,
-            '<div><h1>Heading</h1><pre><code>Some `inline code` here\n</code></pre><blockquote>A quote with <strong>bold</strong> text</blockquote><ul><li>List item 1 with <em>italic</em></li><li>List item 2</li></ul><ol><li>Numbered item 1</li><li>Numbered item 2 with <img src="http://example.com/image.png" alt="image"/></li></ol><p>Regular paragraph with a <a href="http://example.com">link</a>.</p></div>',
+            '<div><h1>Heading</h1><pre><code>Some `inline code` here\n</code></pre><blockquote>A quote with <b>bold</b> text</blockquote><ul><li>List item 1 with <i>italic</i></li><li>List item 2</li></ul><ol><li>Numbered item 1</li><li>Numbered item 2 with <img src="http://example.com/image.png" alt="image"/></li></ol><p>Regular paragraph with a <a href="http://example.com">link</a>.</p></div>',
         )

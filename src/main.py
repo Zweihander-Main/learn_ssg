@@ -1,6 +1,8 @@
 import os
 import shutil
 
+from page import generate_pages_recursive
+
 
 def delete_directory_contents(dir: str):
     """
@@ -78,13 +80,15 @@ def iterate_and_copy_files(src_dir: str, dest_dir: str):
         else:
             copy_single_file(s, d)
 
+    print(f"All contents from '{src_dir}' have been copied to '{dest_dir}'.")
+
 
 def main():
     static_dir = "static"
     public_dir = "public"
     delete_directory_contents(public_dir)
     iterate_and_copy_files(static_dir, public_dir)
-    print(f"All contents from '{static_dir}' have been copied to '{public_dir}'.")
+    generate_pages_recursive("content", "template.html", "public")
 
 
 if __name__ == "__main__":

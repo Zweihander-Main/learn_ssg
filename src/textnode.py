@@ -35,9 +35,9 @@ class TextNode:
             case TextType.TEXT:
                 return LeafNode(tag=None, value=self.text)
             case TextType.BOLD:
-                return LeafNode(tag="strong", value=self.text)
+                return LeafNode(tag="b", value=self.text)
             case TextType.ITALIC:
-                return LeafNode(tag="em", value=self.text)
+                return LeafNode(tag="i", value=self.text)
             case TextType.UNDERLINE:
                 return LeafNode(tag="u", value=self.text)
             case TextType.STRIKETHROUGH:

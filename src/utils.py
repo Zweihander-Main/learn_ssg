@@ -214,9 +214,9 @@ def text_node_to_html_node(text_node: TextNode) -> HTMLNode:
         case TextType.TEXT:
             return LeafNode(tag=None, value=text_node.text)
         case TextType.BOLD:
-            return LeafNode(tag="strong", value=text_node.text)
+            return LeafNode(tag="b", value=text_node.text)
         case TextType.ITALIC:
-            return LeafNode(tag="em", value=text_node.text)
+            return LeafNode(tag="i", value=text_node.text)
         case TextType.UNDERLINE:
             return LeafNode(tag="u", value=text_node.text)
         case TextType.STRIKETHROUGH:
