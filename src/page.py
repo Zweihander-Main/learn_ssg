@@ -4,7 +4,18 @@ import re
 from utils import markdown_to_html_node
 
 
-def extract_title(markdown: str):
+def extract_title(markdown: str) -> str:
+    """
+    Extracts the title from the markdown content.
+    The title is assumed to be the first top-level heading (i.e., a line starting
+    with '# ').
+
+    Args:
+        markdown (str): The markdown content.
+
+    Returns:
+        str: The extracted title.
+    """
     heading_match = re.match(r"^# (.*)", markdown)
     if not heading_match:
         raise ValueError("No top-level heading found in the markdown content.")
@@ -12,6 +23,14 @@ def extract_title(markdown: str):
 
 
 def generate_page(from_path: str, template_path: str, dest_path: str):
+    """
+    Generates an HTML page from a markdown file using a specified template.
+
+    Args:
+        from_path (str): Path to the source markdown file.
+        template_path (str): Path to the HTML template file.
+        dest_path (str): Path where the generated HTML file will be saved.
+    """
     print(
         f"Generating page from {from_path} using template {template_path} to {dest_path}"
     )
@@ -38,6 +57,14 @@ def generate_page(from_path: str, template_path: str, dest_path: str):
 def generate_pages_recursive(
     dir_path_content: str, template_path: str, dest_dir_path: str
 ):
+    """
+    Recursively generates HTML pages for all markdown files in a directory.
+
+    Args:
+        dir_path_content (str): Directory containing markdown files.
+        template_path (str): Path to the HTML template file.
+        dest_dir_path (str): Directory where generated HTML files will be saved.
+    """
     for root, _, files in os.walk(dir_path_content):
         for file in files:
             if file.endswith(".md"):
