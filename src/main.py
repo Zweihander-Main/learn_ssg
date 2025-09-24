@@ -1,7 +1,18 @@
+import argparse
 import os
 import shutil
+from typing import cast
 
 from page import generate_pages_recursive
+
+STATIC_DIR = "static"
+PUBLIC_DIR = "docs"
+
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(description="Static Site Generator")
+    _ = parser.add_argument("basepath", default="/", help="Base path for the site")
+    return parser.parse_args()
 
 
 def delete_directory_contents(dir: str):
@@ -84,11 +95,12 @@ def iterate_and_copy_files(src_dir: str, dest_dir: str):
 
 
 def main():
-    static_dir = "static"
-    public_dir = "public"
-    delete_directory_contents(public_dir)
-    iterate_and_copy_files(static_dir, public_dir)
-    generate_pages_recursive("content", "template.html", "public")
+    args = parse_arguments()
+    basepath = cast(str, args.basepath)
+
+    delete_directory_contents(PUBLIC_DIR)
+    iterate_and_copy_files(STATIC_DIR, PUBLIC_DIR)
+    generate_pages_recursive("content", "template.html", PUBLIC_DIR, basepath)
 
 
 if __name__ == "__main__":

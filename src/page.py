@@ -22,7 +22,7 @@ def extract_title(markdown: str) -> str:
     return heading_match.group(1).strip()
 
 
-def generate_page(from_path: str, template_path: str, dest_path: str):
+def generate_page(from_path: str, template_path: str, dest_path: str, basepath: str):
     """
     Generates an HTML page from a markdown file using a specified template.
 
@@ -43,8 +43,11 @@ def generate_page(from_path: str, template_path: str, dest_path: str):
     html = markdown_to_html_node(markdown_content).to_html()
     title = extract_title(markdown_content)
 
-    final_content = template_content.replace("{{ Content }}", html).replace(
-        "{{ Title }}", title
+    final_content = (
+        template_content.replace("{{ Content }}", html)
+        .replace("{{ Title }}", title)
+        .replace('href="/', f'href="{basepath}')
+        .replace('src="/', f'src="{basepath}')
     )
 
     if not os.path.exists(os.path.dirname(dest_path)):
@@ -55,7 +58,7 @@ def generate_page(from_path: str, template_path: str, dest_path: str):
 
 
 def generate_pages_recursive(
-    dir_path_content: str, template_path: str, dest_dir_path: str
+    dir_path_content: str, template_path: str, dest_dir_path: str, basepath: str
 ):
     """
     Recursively generates HTML pages for all markdown files in a directory.
@@ -71,4 +74,4 @@ def generate_pages_recursive(
                 from_path = os.path.join(root, file)
                 relative_path = os.path.relpath(from_path, dir_path_content)
                 dest_path = os.path.join(dest_dir_path, relative_path[:-3] + ".html")
-                generate_page(from_path, template_path, dest_path)
+                generate_page(from_path, template_path, dest_path, basepath)
