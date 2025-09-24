@@ -98,7 +98,10 @@ def main():
     args = parse_arguments()
     basepath = cast(str, args.basepath)
 
-    delete_directory_contents(PUBLIC_DIR)
+    try:
+        delete_directory_contents(PUBLIC_DIR)
+    except FileNotFoundError:
+        os.makedirs(PUBLIC_DIR)
     iterate_and_copy_files(STATIC_DIR, PUBLIC_DIR)
     generate_pages_recursive("content", "template.html", PUBLIC_DIR, basepath)
 
